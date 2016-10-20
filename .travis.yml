@@ -1,0 +1,16 @@
+language: python
+dist: trusty
+
+python:
+  - 2.7
+  - 3.5
+
+env:
+  - TOX_ENV=py27
+  - TOX_ENV=py35
+
+install:
+  - pip install tox
+
+script:
+  - tox -e $TOX_ENV
