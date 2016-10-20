@@ -2,6 +2,10 @@
 collectd-systemd
 ================
 
+.. image:: https://travis-ci.org/mbachry/collectd-systemd.svg?branch=master
+    :alt: Build status
+    :target: https://travis-ci.org/mbachry/collectd-systemd
+
 A `collectd`_ plugin which checks if given `systemd`_ services are in
 "running" state and sends `graphite`_ metrics with ``1.0`` or ``0.0``
 value.
