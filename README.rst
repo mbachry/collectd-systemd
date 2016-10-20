@@ -6,6 +6,10 @@ collectd-systemd
     :alt: Build status
     :target: https://travis-ci.org/mbachry/collectd-systemd
 
+.. image:: https://coveralls.io/repos/github/mbachry/collectd-systemd/badge.svg?branch=master
+    :alt: Coverage
+    :target: https://coveralls.io/github/mbachry/collectd-systemd?branch=master
+
 A `collectd`_ plugin which checks if given `systemd`_ services are in
 "running" state and sends `graphite`_ metrics with ``1.0`` or ``0.0``
 value.
