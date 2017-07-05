@@ -46,6 +46,13 @@ Copy ``collectd_systemd.py`` to collectd Python plugin directory
         </Module>
     </Plugin>
 
+If your service has dash in the name, you need to wrap that name in double
+quotes::
+
+    <Module collectd_systemd>
+        Service "celery-bots" "gunicorn-data"
+    </Module>
+
 Restart collectd daemon and open grafana web ui. Add a new graph with
 following query::
 
