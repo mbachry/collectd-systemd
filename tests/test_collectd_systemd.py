@@ -15,7 +15,8 @@ def conf_bare():
 def conf_valid(conf_bare):
     conf_bare.children.extend([
         mock.Mock(key='Verbose', values=['tRuE']),
-        mock.Mock(key='Service', values=['service1', 'service2']),
+        mock.Mock(key='Service', values=['service1','service2']),
+        mock.Mock(key='Service', values=['service3']),
     ])
     return conf_bare
 
@@ -45,7 +46,7 @@ def test_configure(mon, conf_valid):
     assert hasattr(mon, 'manager')
     assert mon.interval == 120.0
     assert mon.verbose_logging
-    assert len(mon.services) == 2
+    assert len(mon.services) == 3
 
 
 def test_configure_does_nothing_if_no_services(mon, conf_bare):
@@ -80,13 +81,16 @@ def test_get_service_state(configured_mon):
 
 def test_send_metrics(configured_mon):
     with mock.patch.object(configured_mon, 'get_service_state') as m:
-        m.side_effect = ['running', 'failed']
+        m.side_effect = ['running', 'failed', 'running']
         with mock.patch('collectd.Values') as val_mock:
             configured_mon.read_callback()
-            assert val_mock.call_count == 2
+            assert val_mock.call_count == 3
             c1_kwargs = val_mock.call_args_list[0][1]
             assert c1_kwargs['plugin_instance'] == 'service1'
             assert c1_kwargs['values'] == [1]
             c2_kwargs = val_mock.call_args_list[1][1]
             assert c2_kwargs['plugin_instance'] == 'service2'
             assert c2_kwargs['values'] == [0]
+            c3_kwargs = val_mock.call_args_list[2][1]
+            assert c3_kwargs['plugin_instance'] == 'service3'
+            assert c3_kwargs['values'] == [1]

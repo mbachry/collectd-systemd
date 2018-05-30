@@ -43,6 +43,7 @@ Copy ``collectd_systemd.py`` to collectd Python plugin directory
 
         <Module collectd_systemd>
             Service sshd nginx postgresql
+            Service httpd
         </Module>
     </Plugin>
 
@@ -68,7 +69,8 @@ Configuration
 Following configuration options are supported:
 
 * ``Service``: one or more systemd services to monitor. Separate
-  multiple services with spaces.
+  multiple services with spaces. Multiple services lines can
+  be specified when they will be concatinated.
 
 * ``Interval``: check interval. It's ok to keep the default (60 seconds)
 
