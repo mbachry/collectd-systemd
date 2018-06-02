@@ -45,7 +45,7 @@ class SystemD(object):
         for node in conf.children:
             vals = [str(v) for v in node.values]
             if node.key == 'Service':
-                self.services = vals
+                self.services.extend(vals)
             elif node.key == 'Interval':
                 self.interval = float(vals[0])
             elif node.key == 'Verbose':
