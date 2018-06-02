@@ -82,3 +82,23 @@ Running tests
 Install tox using pip or Linux package manager.
 
 Type ``tox`` to run tests.
+
+Selinux
+-------
+On Redhat systems some selinux policy may be needed. Create
+a file collectd_systemd.te::
+
+    policy_module(collectd_systemd,0.1);
+    require {
+        type collectd_t;
+    }
+    dbus_session_client(system,collectd_t)
+    init_status(collectd_t)
+    init_dbus_chat(collectd_t)
+    systemd_status_all_unit_files(collectd_t)
+
+Create a file collectd_systemd.pp and install it::
+
+   make -f /usr/share/selinux/devel/Makefile collectd_systemd.pp
+   semodule -i collectd_systemd.pp
+
