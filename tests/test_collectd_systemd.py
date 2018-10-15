@@ -77,6 +77,10 @@ def test_get_service_state(configured_mon):
     with mock.patch('dbus.Interface', side_effect=dbus.exceptions.DBusException):
         state = configured_mon.get_service_state('missing')
         assert state == 'broken'
+    with mock.patch.object(configured_mon, 'get_unit') as m:
+        m().Get.side_effect=dbus.exceptions.DBusException
+        state = configured_mon.get_service_state('broken-cache')
+        assert state == 'broken'
 
 
 def test_send_metrics(configured_mon):
@@ -94,3 +98,24 @@ def test_send_metrics(configured_mon):
             c3_kwargs = val_mock.call_args_list[2][1]
             assert c3_kwargs['plugin_instance'] == 'service3'
             assert c3_kwargs['values'] == [1]
+
+
+def test_retry_if_broken(configured_mon):
+    with mock.patch.object(configured_mon, 'get_service_state') as m:
+        m.side_effect = ['broken', 'running', 'failed', 'running']
+        with mock.patch.object(configured_mon, 'init_dbus') as idm:
+            with mock.patch('collectd.Values') as val_mock:
+                configured_mon.read_callback()
+                idm.assert_called_once()
+                assert m.call_count == 4
+                m.call_args_list[0][0][0] == m.call_args_list[1][0][0] == 'service1'
+                assert val_mock.call_count == 3
+                c1_kwargs = val_mock.call_args_list[0][1]
+                assert c1_kwargs['plugin_instance'] == 'service1'
+                assert c1_kwargs['values'] == [1]
+                c2_kwargs = val_mock.call_args_list[1][1]
+                assert c2_kwargs['plugin_instance'] == 'service2'
+                assert c2_kwargs['values'] == [0]
+                c3_kwargs = val_mock.call_args_list[2][1]
+                assert c3_kwargs['plugin_instance'] == 'service3'
+                assert c3_kwargs['values'] == [1]
