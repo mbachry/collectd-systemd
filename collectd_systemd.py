@@ -16,6 +16,7 @@ class SystemD(object):
         collectd.info('{} plugin [verbose]: {}'.format(self.plugin_name, msg))
 
     def init_dbus(self):
+        self.units = {}
         self.bus = dbus.SystemBus()
         self.manager = dbus.Interface(self.bus.get_object('org.freedesktop.systemd1',
                                                           '/org/freedesktop/systemd1'),
@@ -39,7 +40,11 @@ class SystemD(object):
         if not unit:
             return 'broken'
         else:
-            return unit.Get('org.freedesktop.systemd1.Unit', 'SubState')
+            try:
+                return unit.Get('org.freedesktop.systemd1.Unit', 'SubState')
+            except dbus.exceptions.DBusException as e:
+                self.log_verbose('{} plugin: failed to monitor unit {}: {}'.format(self.plugin_name, name, e))
+                return 'broken'
 
     def configure_callback(self, conf):
         for node in conf.children:
@@ -65,7 +70,13 @@ class SystemD(object):
         self.log_verbose('Read callback called')
         for name in self.services:
             full_name = name + '.service'
+
             state = self.get_service_state(full_name)
+            if state == 'broken':
+                self.log_verbose ('Unit {0} reported as broken. Reinitializing the connection to dbus & retrying.'.format(full_name))
+                self.init_dbus()
+                state = self.get_service_state(full_name)
+
             value = (1.0 if state == 'running' or state == 'reload' else 0.0)
             self.log_verbose('Sending value: {}.{}={} (state={})'
                              .format(self.plugin_name, name, value, state))
