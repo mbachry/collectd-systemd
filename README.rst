@@ -91,11 +91,13 @@ a file collectd_systemd.te::
     policy_module(collectd_systemd,0.1);
     require {
         type collectd_t;
+        type initrc_exec_t;
     }
     dbus_session_client(system,collectd_t)
     init_status(collectd_t)
     init_dbus_chat(collectd_t)
     systemd_status_all_unit_files(collectd_t)
+    allow collectd_t initrc_exec_t:service { status };
 
 Create a file collectd_systemd.pp and install it::
 
